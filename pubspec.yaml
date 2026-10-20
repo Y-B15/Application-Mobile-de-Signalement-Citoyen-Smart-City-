@@ -1,0 +1,26 @@
+name: cityalert
+description: "CityAlert - application mobile de signalement citoyen (Smart City)."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Inter : la police du design system (téléchargée au premier lancement).
+  google_fonts: ^6.2.1
+  # Material Symbols Rounded : les mêmes icônes que dans Figma.
+  material_symbols_icons: ^4.2800.0
+  # Carte et géolocalisation.
+  google_maps_flutter: ^2.9.0
+  geolocator: ^13.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
