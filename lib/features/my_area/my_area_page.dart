@@ -182,9 +182,7 @@ class _MyAreaPageState extends State<MyAreaPage> {
         bottomNavigationBar: CityBottomNav(
           currentIndex: 1,
           onTap: (index) {
-            if (index == 0) {
-              Navigator.pushReplacementNamed(context, '/map');
-            }
+            if (index == 0) _showSoon('Carte');
           },
         ),
       ),

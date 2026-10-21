@@ -37,7 +37,7 @@ class CityAlertApp extends StatelessWidget {
         '/register': (context) => const RegisterPage(),
         '/forgot-password': (context) => const ForgotPasswordPage(),
         '/auth/reset-sent': (context) => const ResetSentPage(),
-        '/home': (context) => const MapPage(),
+        '/home': (context) => const HomePage(),
         '/map': (context) => const MapPage(),
         '/my-area': (context) => const MyAreaPage(),
         '/report': (context) => const ReportPage(),
