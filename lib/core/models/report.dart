@@ -26,9 +26,6 @@ enum ReportCategory {
 }
 
 /// Un signalement effectué par un citoyen.
-///
-/// Plus tard on ajoutera `fromFirestore()` ainsi que latitude, longitude,
-/// URL de la photo et description.
 class Report {
   const Report({
     required this.id,
@@ -38,6 +35,8 @@ class Report {
     required this.address,
     required this.createdAt,
     required this.status,
+    this.latitude,
+    this.longitude,
   });
 
   final String id;
@@ -49,4 +48,8 @@ class Report {
   final String address;
   final DateTime createdAt;
   final ReportStatus status;
+
+  /// Coordonnées géographiques sur la carte.
+  final double? latitude;
+  final double? longitude;
 }
