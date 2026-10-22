@@ -169,6 +169,6 @@ Pour exécuter la carte Google Maps en local :
 <div align="center">
 
   **CityAlert · Smart City Signalement Citoyen**  
-  *Développé dans le cadre du projet de stage ESTSB / OCP*
+  *Développé dans le cadre du projet de Semester*
 
 </div>
