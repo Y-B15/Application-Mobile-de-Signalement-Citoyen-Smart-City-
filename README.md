@@ -9,7 +9,7 @@
   [![Material 3](https://img.shields.io/badge/Design-Material%203-757575?style=for-the-badge&logo=materialdesign&logoColor=white)](https://m3.material.io)
   [![Theme](https://img.shields.io/badge/Theme-Clair%20%26%20Sombre-0F766E?style=for-the-badge)](https://figma.com)
 
-  *Projet de Fin d'Études / Stage **ESTSB & OCP** · Application Mobile Smart City*
+  *Projet de Fin de Semestre · Application Mobile Smart City*
 
 </div>
 
