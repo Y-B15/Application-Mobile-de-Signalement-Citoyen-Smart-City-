@@ -8,9 +8,8 @@ import '../../core/theme/app_text.dart';
 /// Barre de navigation du bas (Figma : « Bottom Nav », 72 px).
 ///
 /// Padding gauche/droite 56, haut 12, bas 16 ; les deux onglets sont répartis
-/// aux extrémités. Onglet actif : pastille pleine de 24 px couleur primaire et
-/// libellé en couleur de texte principale ; onglet inactif : icône et libellé
-/// en couleur « caption ».
+/// aux extrémités. Onglet actif : pastille ronde de 24 px (#E6F7F5), icône et
+/// libellé en couleur primaire. Onglet inactif : icône et libellé « caption ».
 class CityBottomNav extends StatelessWidget {
   const CityBottomNav({
     super.key,
@@ -77,6 +76,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final color = selected ? c.primary : c.caption;
 
     return Semantics(
       button: true,
@@ -88,26 +88,17 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Actif : pastille primaire pleine (l'icône a la même couleur dans
-            // Figma, elle se fond donc dans la pastille).
             Container(
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: selected ? c.primary : Colors.transparent,
+                color: selected ? c.selectedTint : Colors.transparent,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                destination.icon,
-                size: 24,
-                color: selected ? c.primary : c.caption,
-              ),
+              child: Icon(destination.icon, size: 24, color: color),
             ),
             const SizedBox(height: 4),
-            Text(
-              destination.label,
-              style: AppText.captionStrong(selected ? c.text : c.caption),
-            ),
+            Text(destination.label, style: AppText.captionStrong(color)),
           ],
         ),
       ),

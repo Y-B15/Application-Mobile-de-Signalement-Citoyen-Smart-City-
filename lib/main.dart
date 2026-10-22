@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'features/home/home_shell.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/screens/forgot_password_page.dart';
 import 'features/auth/screens/login_page.dart';
@@ -37,7 +37,7 @@ class CityAlertApp extends StatelessWidget {
         '/register': (context) => const RegisterPage(),
         '/forgot-password': (context) => const ForgotPasswordPage(),
         '/auth/reset-sent': (context) => const ResetSentPage(),
-        '/home': (context) => const HomePage(),
+        '/home': (context) => const HomeShell(),
         '/map': (context) => const MapPage(),
         '/my-area': (context) => const MyAreaPage(),
         '/report': (context) => const ReportPage(),

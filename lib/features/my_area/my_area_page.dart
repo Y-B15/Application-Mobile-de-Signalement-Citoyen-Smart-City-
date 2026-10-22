@@ -6,10 +6,10 @@ import '../../core/data/reports_repository.dart';
 import '../../core/models/report.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
-import '../../shared/widgets/city_bottom_nav.dart';
 import '../../shared/widgets/city_fab.dart';
 import '../../shared/widgets/report_card.dart';
 import '../../shared/widgets/state_cards.dart';
+import '../new_report/new_report_page.dart';
 import 'report_filter.dart';
 import 'widgets/account_row.dart';
 import 'widgets/filter_tabs.dart';
@@ -17,6 +17,7 @@ import 'widgets/profile_header.dart';
 import 'widgets/stats_card.dart';
 
 /// Écran « Mon espace » (Figma : « 5 · Mon espace », clair et sombre).
+/// La barre de navigation du bas est fournie par `HomeShell`.
 ///
 /// Ordre des blocs, espacés de 12 px : profil, statistiques, compte, onglets,
 /// liste « Mes signalements ». Marges de l'écran : 16 (gauche/droite/bas) et 8 (haut).
@@ -81,6 +82,20 @@ class _MyAreaPageState extends State<MyAreaPage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text('$label : bientôt disponible')));
+  }
+
+  /// Ouvre le formulaire de signalement ; à son retour, confirme l'envoi.
+  Future<void> _openNewReport() async {
+    final tracking = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const NewReportPage()),
+    );
+    if (tracking != null && mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text('Signalement #$tracking envoyé (démonstration)'),
+        ));
+    }
   }
 
   Future<void> _confirmLogout() async {
@@ -175,15 +190,9 @@ class _MyAreaPageState extends State<MyAreaPage> {
             Positioned(
               right: 16,
               bottom: 19,
-              child: CityFab(onPressed: () => _showSoon('Nouveau signalement')),
+              child: CityFab(onPressed: _openNewReport),
             ),
           ],
-        ),
-        bottomNavigationBar: CityBottomNav(
-          currentIndex: 1,
-          onTap: (index) {
-            if (index == 0) _showSoon('Carte');
-          },
         ),
       ),
     );
@@ -200,7 +209,7 @@ class _MyAreaPageState extends State<MyAreaPage> {
         EmptyStateCard(
           message: 'Aucun signalement à afficher pour le moment.',
           actionLabel: 'Signaler un problème',
-          onAction: () => _showSoon('Nouveau signalement'),
+          onAction: _openNewReport,
         ),
       ];
     }

@@ -38,6 +38,9 @@ class Report {
     required this.address,
     required this.createdAt,
     required this.status,
+    this.latitude,
+    this.longitude,
+    this.photoUrl,
   });
 
   final String id;
@@ -49,4 +52,11 @@ class Report {
   final String address;
   final DateTime createdAt;
   final ReportStatus status;
+
+  /// Position GPS du problème (affichée sur la carte).
+  final double? latitude;
+  final double? longitude;
+
+  /// Photo envoyée par le citoyen (URL Firebase Storage plus tard).
+  final String? photoUrl;
 }

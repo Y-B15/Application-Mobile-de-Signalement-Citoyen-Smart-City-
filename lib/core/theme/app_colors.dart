@@ -22,6 +22,8 @@ class CityAlertColors extends ThemeExtension<CityAlertColors> {
     required this.inProgress,
     required this.resolved,
     required this.urgent,
+    required this.selectedTint,
+    required this.accentTint,
   });
 
   /// Fond des écrans.
@@ -56,6 +58,14 @@ class CityAlertColors extends ThemeExtension<CityAlertColors> {
   /// Urgence / alerte (rouge).
   final Color urgent;
 
+  /// Fond de l'élément sélectionné (puce « Tous », onglet actif de la barre du bas) :
+  /// #E6F7F5 en clair ET en sombre dans Figma.
+  final Color selectedTint;
+
+  /// Fond « accent » du formulaire de signalement (cercle de l'appareil photo,
+  /// catégorie choisie) : #E6F4F6 en clair, #183A38 en sombre.
+  final Color accentTint;
+
   static const light = CityAlertColors(
     background: Color(0xFFF8FAFC),
     surface: Color(0xFFFFFFFF),
@@ -69,6 +79,8 @@ class CityAlertColors extends ThemeExtension<CityAlertColors> {
     inProgress: Color(0xFF1D4ED8),
     resolved: Color(0xFF15803D),
     urgent: Color(0xFFB91C1C),
+    selectedTint: Color(0xFFE6F7F5),
+    accentTint: Color(0xFFE6F4F6),
   );
 
   static const dark = CityAlertColors(
@@ -84,6 +96,8 @@ class CityAlertColors extends ThemeExtension<CityAlertColors> {
     inProgress: Color(0xFF6FA7EB),
     resolved: Color(0xFF59CF84),
     urgent: Color(0xFFF87171),
+    selectedTint: Color(0xFFE6F7F5),
+    accentTint: Color(0xFF183A38),
   );
 
   /// Couleur forte d'un statut.
@@ -110,6 +124,8 @@ class CityAlertColors extends ThemeExtension<CityAlertColors> {
     Color? inProgress,
     Color? resolved,
     Color? urgent,
+    Color? selectedTint,
+    Color? accentTint,
   }) {
     return CityAlertColors(
       background: background ?? this.background,
@@ -124,6 +140,8 @@ class CityAlertColors extends ThemeExtension<CityAlertColors> {
       inProgress: inProgress ?? this.inProgress,
       resolved: resolved ?? this.resolved,
       urgent: urgent ?? this.urgent,
+      selectedTint: selectedTint ?? this.selectedTint,
+      accentTint: accentTint ?? this.accentTint,
     );
   }
 
@@ -144,6 +162,8 @@ class CityAlertColors extends ThemeExtension<CityAlertColors> {
       inProgress: Color.lerp(inProgress, other.inProgress, t)!,
       resolved: Color.lerp(resolved, other.resolved, t)!,
       urgent: Color.lerp(urgent, other.urgent, t)!,
+      selectedTint: Color.lerp(selectedTint, other.selectedTint, t)!,
+      accentTint: Color.lerp(accentTint, other.accentTint, t)!,
     );
   }
 }

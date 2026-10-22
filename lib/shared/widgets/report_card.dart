@@ -5,6 +5,7 @@ import '../../core/models/report.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/utils/date_format.dart';
+import 'report_icons.dart';
 import 'status_badge.dart';
 import 'surface_card.dart';
 
@@ -36,7 +37,7 @@ class ReportCard extends StatelessWidget {
               color: _thumbTint(report),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(_categoryIcon(report.category), size: 24, color: c.caption),
+            child: Icon(report.category.icon, size: 24, color: c.caption),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -68,13 +69,6 @@ class ReportCard extends StatelessWidget {
       ),
     );
   }
-
-  /// Icône de chaque catégorie (Material Symbols Rounded, comme dans Figma).
-  static IconData _categoryIcon(ReportCategory category) => switch (category) {
-        ReportCategory.pothole => Symbols.construction_rounded,
-        ReportCategory.streetLight => Symbols.lightbulb_rounded,
-        ReportCategory.illegalDump => Symbols.delete_rounded,
-      };
 
   /// Pastel de la vignette, relevé dans Figma :
   /// signalé #FEF2F2, en cours #FFF7ED, résolu #ECFDF5.
