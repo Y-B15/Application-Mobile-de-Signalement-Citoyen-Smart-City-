@@ -24,3 +24,27 @@ String formatReportDate(DateTime date, {DateTime? now}) {
       ? '${date.day} $month'
       : '${date.day} $month ${date.year}';
 }
+
+String _two(int n) => n.toString().padLeft(2, '0');
+
+/// « 17 oct. »
+String formatDayMonth(DateTime d) => '${d.day} ${_months[d.month - 1]}';
+
+/// « 16 oct. · 09:14 » (historique du signalement).
+String formatDayMonthTime(DateTime d) =>
+    '${formatDayMonth(d)} · ${_two(d.hour)}:${_two(d.minute)}';
+
+/// « 16 oct. 2026 à 09:14 » (fiche du signalement).
+String formatFullDateTime(DateTime d) =>
+    '${formatDayMonth(d)} ${d.year} à ${_two(d.hour)}:${_two(d.minute)}';
+
+/// Date d'un commentaire : « Il y a 2 h », « Hier », puis « 14 oct. ».
+String formatCommentDate(DateTime date, {DateTime? now}) {
+  final current = now ?? DateTime.now();
+  final diff = current.difference(date);
+
+  if (!diff.isNegative && diff.inHours >= 24 && diff.inHours < 48) return 'Hier';
+
+  final text = formatReportDate(date, now: current);
+  return text[0].toUpperCase() + text.substring(1);
+}

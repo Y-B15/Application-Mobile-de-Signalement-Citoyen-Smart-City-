@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/city_app_bar.dart';
 import '../../shared/widgets/city_button.dart';
 import '../camera/camera_page.dart';
+import '../confirmation/confirmation_page.dart';
 import 'widgets/category_section.dart';
 import 'widgets/description_field.dart';
 import 'widgets/location_section.dart';
@@ -20,7 +21,7 @@ import 'widgets/photo_section.dart';
 /// Marges 16 (gauche/droite) et 8 (haut/bas), espace de 12 entre les sections :
 /// photo, localisation, catégorie, description, bouton d'envoi.
 ///
-/// Se ferme en renvoyant le numéro de suivi (« CA-2050 ») quand l'envoi réussit.
+/// Quand l'envoi réussit, ouvre l'écran de confirmation avec le numéro de suivi.
 class NewReportPage extends StatefulWidget {
   const NewReportPage({
     super.key,
@@ -135,12 +136,27 @@ class _NewReportPageState extends State<NewReportPage> {
         ),
       );
       if (!mounted) return;
-      Navigator.of(context).pop(tracking);
+      // On remplace le formulaire par l'écran de confirmation : « retour »
+      // ramène alors directement à l'écran précédent.
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => ConfirmationPage(trackingNumber: tracking),
+        ),
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSending = false);
       _showMessage('Envoi impossible : vérifiez votre connexion.');
     }
+  }
+
+  /// « 1 photo · Nid-de-poule, Rue Hassan II » (Figma : « 3b · photo ajoutée »).
+  String get _photoSummary {
+    final street = _place?.address.split(',').first.trim();
+    final where = (street == null || street.isEmpty)
+        ? _category.label
+        : '${_category.label}, $street';
+    return '1 photo · $where';
   }
 
   void _showMessage(String message) {
@@ -181,7 +197,8 @@ class _NewReportPageState extends State<NewReportPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         PhotoSection(
-                          photoPath: _photoPath,
+                          hasPhoto: _photoPath != null,
+                          summary: _photoSummary,
                           onCamera: _takePhoto,
                           onGallery: _pickFromGallery,
                         ),

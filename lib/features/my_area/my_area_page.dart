@@ -10,6 +10,7 @@ import '../../shared/widgets/city_fab.dart';
 import '../../shared/widgets/report_card.dart';
 import '../../shared/widgets/state_cards.dart';
 import '../new_report/new_report_page.dart';
+import '../report_detail/report_detail_page.dart';
 import 'report_filter.dart';
 import 'widgets/account_row.dart';
 import 'widgets/filter_tabs.dart';
@@ -219,7 +220,11 @@ class _MyAreaPageState extends State<MyAreaPage> {
         ReportCard(
           key: ValueKey(report.id),
           report: report,
-          onTap: () => _showSoon('Signalement #${report.trackingNumber}'),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ReportDetailPage(report: report),
+            ),
+          ),
         ),
     ];
   }

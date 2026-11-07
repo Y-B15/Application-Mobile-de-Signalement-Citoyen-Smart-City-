@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -10,27 +8,34 @@ import '../../../shared/widgets/surface_card.dart';
 
 /// Carte « Ajouter une photo du problème » (Figma : « Photo Section », 160 px).
 ///
-/// Contenu centré, espace 4 : pastille appareil photo de 40 px, titre,
-/// phrase d'aide, puis deux boutons (« Prendre une photo » / « Galerie »).
+/// Contenu centré, espace 4 : pastille de 40 px, titre, phrase, deux boutons.
 ///
-/// Quand une photo est choisie (état non dessiné dans Figma), la pastille est
-/// remplacée par la miniature de la photo et les textes changent.
+/// Deux états, tous deux dessinés dans Figma :
+/// - sans photo : pastille appareil photo, « Prendre une photo » / « Galerie »
+/// - avec photo (« 3b ») : pastille grise avec icône image, « Photo ajoutée »,
+///   résumé « 1 photo · Nid-de-poule, Rue Hassan II », « Reprendre » / « Galerie »
 class PhotoSection extends StatelessWidget {
   const PhotoSection({
     super.key,
-    required this.photoPath,
+    required this.hasPhoto,
+    required this.summary,
     required this.onCamera,
     required this.onGallery,
   });
 
-  final String? photoPath;
+  final bool hasPhoto;
+
+  /// Résumé affiché sous « Photo ajoutée ».
+  final String summary;
   final VoidCallback onCamera;
   final VoidCallback onGallery;
+
+  /// Gris de la pastille « photo ajoutée » : #424A54 en clair et en sombre.
+  static const Color _photoAddedCircle = Color(0xFF424A54);
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final hasPhoto = photoPath != null;
 
     return SurfaceCard(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -40,20 +45,19 @@ class PhotoSection extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (hasPhoto)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  File(photoPath!),
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.cover,
-                  // Si le fichier a disparu, on retombe sur la pastille.
-                  errorBuilder: (_, __, ___) => _CameraCircle(color: c.accentTint),
-                ),
-              )
-            else
-              _CameraCircle(color: c.accentTint),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: hasPhoto ? _photoAddedCircle : c.accentTint,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                hasPhoto ? Symbols.image_rounded : Symbols.photo_camera_rounded,
+                size: 24,
+                color: hasPhoto ? Colors.white : c.caption,
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               hasPhoto ? 'Photo ajoutée' : 'Ajouter une photo du problème',
@@ -61,9 +65,9 @@ class PhotoSection extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              hasPhoto
-                  ? 'Vous pouvez la remplacer avant l’envoi'
-                  : 'Une photo aide les équipes à intervenir plus vite',
+              hasPhoto ? summary : 'Une photo aide les équipes à intervenir plus vite',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppText.caption(c.caption),
             ),
             const SizedBox(height: 4),
@@ -86,26 +90,6 @@ class PhotoSection extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CameraCircle extends StatelessWidget {
-  const _CameraCircle({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Icon(
-        Symbols.photo_camera_rounded,
-        size: 24,
-        color: context.colors.caption,
       ),
     );
   }

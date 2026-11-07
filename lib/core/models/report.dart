@@ -23,6 +23,20 @@ enum ReportCategory {
 
   const ReportCategory(this.label);
   final String label;
+
+  /// Service municipal chargé de ce type de problème (« Voirie »...).
+  String get service => switch (this) {
+        ReportCategory.pothole => 'Voirie',
+        ReportCategory.streetLight => 'Éclairage public',
+        ReportCategory.illegalDump => 'Propreté',
+      };
+
+  /// Le même service avec son article (« la Voirie », « l’Éclairage public »).
+  String get serviceWithArticle => switch (this) {
+        ReportCategory.pothole => 'la Voirie',
+        ReportCategory.streetLight => 'l’Éclairage public',
+        ReportCategory.illegalDump => 'la Propreté',
+      };
 }
 
 /// Un signalement effectué par un citoyen.

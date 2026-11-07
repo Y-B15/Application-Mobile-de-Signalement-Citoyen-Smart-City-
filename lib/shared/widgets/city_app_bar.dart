@@ -9,12 +9,28 @@ import '../../core/theme/app_text.dart';
 /// bouton retour de 48 × 48 (rayon 8, icône « caption ») puis le titre.
 /// Padding 4, espace 4.
 class CityAppBar extends StatelessWidget {
-  const CityAppBar({super.key, required this.title, this.onBack});
+  const CityAppBar({
+    super.key,
+    required this.title,
+    this.onBack,
+    this.trailingIcon,
+    this.onTrailingTap,
+    this.trailingLabel,
+    this.iconColor,
+  });
 
   final String title;
 
   /// Par défaut : revenir à l'écran précédent.
   final VoidCallback? onBack;
+
+  /// Action à droite (par exemple « ⋮ »), avec son libellé pour l'accessibilité.
+  final IconData? trailingIcon;
+  final VoidCallback? onTrailingTap;
+  final String? trailingLabel;
+
+  /// Couleur des icônes : « caption » par défaut, couleur du texte sur l'écran Commentaires.
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +51,7 @@ class CityAppBar extends StatelessWidget {
                 child: SizedBox(
                   width: 48,
                   height: 48,
-                  child: Icon(Symbols.arrow_back_rounded, size: 24, color: c.caption),
+                  child: Icon(Symbols.arrow_back_rounded, size: 24, color: iconColor ?? c.caption),
                 ),
               ),
             ),
@@ -49,6 +65,23 @@ class CityAppBar extends StatelessWidget {
               style: AppText.title(c.text),
             ),
           ),
+          if (trailingIcon != null)
+            Tooltip(
+              message: trailingLabel ?? '',
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onTrailingTap,
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Icon(trailingIcon, size: 24, color: iconColor ?? c.caption),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

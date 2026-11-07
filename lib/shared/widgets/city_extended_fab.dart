@@ -12,11 +12,15 @@ class CityExtendedFab extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.onPressed,
+    this.expand = false,
   });
 
   final String label;
   final IconData icon;
   final VoidCallback onPressed;
+
+  /// true : remplit la largeur disponible, contenu centré (ex. « Soutenir »).
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +38,8 @@ class CityExtendedFab extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(icon, size: 24, color: c.onPrimary),
                 const SizedBox(width: 8),

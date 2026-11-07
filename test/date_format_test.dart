@@ -26,4 +26,17 @@ void main() {
   test('année précédente', () {
     expect(formatReportDate(DateTime(2025, 12, 31, 9), now: now), '31 déc. 2025');
   });
+
+  test('formats détaillés', () {
+    final d = DateTime(2026, 10, 16, 9, 4);
+    expect(formatDayMonth(d), '16 oct.');
+    expect(formatDayMonthTime(d), '16 oct. · 09:04');
+    expect(formatFullDateTime(d), '16 oct. 2026 à 09:04');
+  });
+
+  test('dates de commentaires', () {
+    expect(formatCommentDate(now.subtract(const Duration(hours: 2)), now: now), 'Il y a 2 h');
+    expect(formatCommentDate(now.subtract(const Duration(hours: 30)), now: now), 'Hier');
+    expect(formatCommentDate(DateTime(2026, 10, 14, 9), now: now), '14 oct.');
+  });
 }

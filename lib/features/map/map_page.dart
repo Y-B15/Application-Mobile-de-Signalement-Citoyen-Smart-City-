@@ -1,116 +1,89 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../core/data/reports_repository.dart';
 import '../../core/models/report.dart';
+import '../../core/services/location_service.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_decor.dart';
 import '../../shared/widgets/city_extended_fab.dart';
+import '../../shared/widgets/city_toast.dart';
 import '../../shared/widgets/report_icons.dart';
 import '../new_report/new_report_page.dart';
+import '../report_detail/report_detail_page.dart';
 import 'map_styles.dart';
 import 'marker_icon_factory.dart';
+import 'widgets/locate_button.dart';
 import 'widgets/map_filter_chips.dart';
 import 'widgets/map_search_bar.dart';
 import 'widgets/report_sheet_card.dart';
 
 /// Écran « Carte » (Figma : « 2 · Carte » et « 2.2 · Carte après clic »).
 ///
-/// Une carte Google Maps plein écran avec géolocalisation GPS personnalisée,
-/// point de localisation stylisé aux couleurs de l'application (sans grand cercle
-/// bleu ni flèche d'orientation), bouton de recentrage positionné juste au-dessus
-/// du bouton « Signaler », barre de recherche et puces de filtre.
+/// Une carte Google Maps plein écran, sous : la barre de recherche, les puces
+/// de filtre, le bouton « Signaler » et, quand on touche un repère, la fiche du
+/// signalement. La barre du bas est fournie par `HomeShell`.
 class MapPage extends StatefulWidget {
-  const MapPage({super.key, ReportsRepository? repository})
-      : repository = repository ?? const MockReportsRepository();
+  const MapPage({
+    super.key,
+    ReportsRepository? repository,
+    this.locationService = const LocationService(),
+  }) : repository = repository ?? const MockReportsRepository();
 
   final ReportsRepository repository;
+  final LocationService locationService;
 
   @override
   State<MapPage> createState() => _MapPageState();
 }
 
 class _MapPageState extends State<MapPage> {
-  /// Centre par défaut de la carte : Casablanca, zoom 16.
+  /// Centre de la carte : Casablanca, zoom 16 (comme la maquette).
   static const CameraPosition _initialCamera = CameraPosition(
     target: LatLng(33.5883, -7.6322),
     zoom: 16,
   );
 
-  // Utilisateur de démonstration.
+  // Utilisateur de démonstration (viendra de Firebase Auth plus tard).
   static const String _userInitials = 'YB';
 
-  GoogleMapController? _mapController;
   List<Report> _reports = const [];
   ReportStatus? _statusFilter; // null = « Tous »
   Report? _selected;
-  Report? _sheetReport;
 
-  LatLng? _userLocation;
-  BitmapDescriptor? _userIcon;
-  bool _hasLocationPermission = false;
+  /// Dernière fiche affichée : on la garde pour qu'elle reste visible
+  /// pendant son animation de sortie.
+  Report? _sheetReport;
 
   /// Images des repères, une par couple catégorie + statut.
   Map<String, BitmapDescriptor> _icons = const {};
   Brightness? _iconsBrightness;
   double? _iconsRatio;
 
+  /// Contrôleur de la carte : sert à déplacer la caméra (bouton « Ma position »).
+  GoogleMapController? _mapController;
+  bool _isLocating = false;
+
+  /// Affiche le point bleu de l'utilisateur, une fois la permission accordée.
+  bool _showMyLocation = false;
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
     _loadReports();
-    _requestLocationPermission();
-  }
-
-  /// Demande l'autorisation GPS dès l'ouverture de la carte.
-  Future<void> _requestLocationPermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-
-    if (permission == LocationPermission.whileInUse ||
-        permission == LocationPermission.always) {
-      if (!mounted) return;
-      setState(() => _hasLocationPermission = true);
-      _goToUserCurrentLocation();
-    }
-  }
-
-  /// Anime la caméra vers la position GPS réelle de l'utilisateur.
-  Future<void> _goToUserCurrentLocation() async {
-    try {
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-      if (!mounted) return;
-
-      final latLng = LatLng(position.latitude, position.longitude);
-      setState(() => _userLocation = latLng);
-
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(latLng, 15.5),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      _showMessage('Impossible de récupérer votre position GPS.');
-    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _buildIcons();
+    _buildIcons(); // à refaire si le thème ou la densité d'écran change
   }
 
   Future<void> _loadReports() async {
@@ -124,42 +97,7 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  /// Dessine le repère de position utilisateur stylisé (point couleur primaire).
-  Future<BitmapDescriptor> _buildUserIcon(CityAlertColors c) async {
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-    const size = Size(64, 64);
-    final center = Offset(size.width / 2, size.height / 2);
-
-    // Ombre douce extérieure
-    canvas.drawCircle(
-      center,
-      22,
-      Paint()..color = c.primary.withAlpha(45),
-    );
-
-    // Halo extérieur blanc
-    canvas.drawCircle(
-      center,
-      14,
-      Paint()..color = Colors.white,
-    );
-
-    // Point central aux couleurs primaires de l'application
-    canvas.drawCircle(
-      center,
-      10,
-      Paint()..color = c.primary,
-    );
-
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(size.width.toInt(), size.height.toInt());
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-
-    return BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
-  }
-
-  /// Dessine les 9 repères aux couleurs du thème et le repère utilisateur.
+  /// Dessine les 9 repères (3 catégories × 3 statuts) aux couleurs du thème.
   Future<void> _buildIcons() async {
     final brightness = Theme.of(context).brightness;
     final ratio = MediaQuery.devicePixelRatioOf(context);
@@ -170,9 +108,6 @@ class _MapPageState extends State<MapPage> {
     final colors = brightness == Brightness.dark
         ? CityAlertColors.dark
         : CityAlertColors.light;
-
-    // Icône utilisateur personnalisée aux couleurs de l'application
-    final userIcon = await _buildUserIcon(colors);
 
     final next = <String, BitmapDescriptor>{};
     for (final status in ReportStatus.values) {
@@ -186,10 +121,7 @@ class _MapPageState extends State<MapPage> {
       }
     }
     if (!mounted) return;
-    setState(() {
-      _icons = next;
-      _userIcon = userIcon;
-    });
+    setState(() => _icons = next);
   }
 
   static String _iconKey(ReportCategory c, ReportStatus s) => '${c.name}-${s.name}';
@@ -199,53 +131,59 @@ class _MapPageState extends State<MapPage> {
       : _reports.where((r) => r.status == _statusFilter).toList();
 
   Set<Marker> _buildMarkers() {
-    final markers = <Marker>{};
+    // On attend que les images soient prêtes pour éviter les repères rouges par défaut.
+    if (_icons.isEmpty) return const {};
 
-    // Repère de localisation utilisateur personnalisé
-    if (_userLocation != null && _userIcon != null) {
-      markers.add(
-        Marker(
-          markerId: const MarkerId('user_location'),
-          position: _userLocation!,
-          icon: _userIcon!,
-          anchor: const Offset(0.5, 0.5),
-        ),
+    return {
+      for (final r in _visibleReports)
+        if (r.latitude != null && r.longitude != null)
+          Marker(
+            markerId: MarkerId(r.id),
+            position: LatLng(r.latitude!, r.longitude!),
+            icon: _icons[_iconKey(r.category, r.status)] ??
+                BitmapDescriptor.defaultMarker,
+            anchor: MarkerIconFactory.anchor,
+            onTap: () => setState(() {
+              _selected = r;
+              _sheetReport = r;
+            }),
+          ),
+    };
+  }
+
+  /// Bouton « Ma position » : lit le GPS puis centre la carte sur l'utilisateur.
+  Future<void> _goToMyLocation() async {
+    if (_isLocating) return;
+    setState(() => _isLocating = true);
+    try {
+      final here = await widget.locationService.currentCoordinates();
+      if (!mounted) return;
+      setState(() => _showMyLocation = true); // point bleu (permission accordée)
+      await _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(LatLng(here.latitude, here.longitude), 17),
       );
+    } on LocationException catch (e) {
+      if (!mounted) return;
+      CityToast.show(context, e.message, icon: Symbols.location_off_rounded);
+    } catch (_) {
+      if (!mounted) return;
+      CityToast.show(context, 'Impossible de vous localiser.', icon: Symbols.location_off_rounded);
+    } finally {
+      if (mounted) setState(() => _isLocating = false);
     }
-
-    if (_icons.isNotEmpty) {
-      for (final r in _visibleReports) {
-        if (r.latitude != null && r.longitude != null) {
-          markers.add(
-            Marker(
-              markerId: MarkerId(r.id),
-              position: LatLng(r.latitude!, r.longitude!),
-              icon: _icons[_iconKey(r.category, r.status)] ??
-                  BitmapDescriptor.defaultMarker,
-              anchor: MarkerIconFactory.anchor,
-              onTap: () => setState(() {
-                _selected = r;
-                _sheetReport = r;
-              }),
-            ),
-          );
-        }
-      }
-    }
-
-    return markers;
   }
 
   void _onFilterChanged(ReportStatus? status) {
     setState(() {
       _statusFilter = status;
+      // La fiche se ferme si le signalement affiché n'est plus visible.
       if (_selected != null && status != null && _selected!.status != status) {
         _selected = null;
       }
     });
   }
 
-  /// Ouvre le formulaire de signalement.
+  /// Ouvre le formulaire de signalement ; à son retour, confirme l'envoi.
   Future<void> _openNewReport() async {
     final tracking = await Navigator.of(context).push<String>(
       MaterialPageRoute(builder: (_) => const NewReportPage()),
@@ -266,9 +204,10 @@ class _MapPageState extends State<MapPage> {
     final c = context.colors;
     final isDark = context.isDark;
 
+    // Dans Figma, la barre d'état fait 36 px et la recherche commence à y = 40.
     final topInset = MediaQuery.paddingOf(context).top;
-    final double searchTop = (topInset < 36.0 ? 36.0 : topInset) + 4.0;
-    final double filtersTop = searchTop + 52.0 + 12.0;
+    final double searchTop = (topInset < 36 ? 36.0 : topInset) + 4;
+    final double filtersTop = searchTop + 52 + 12;
 
     final sheetVisible = _selected != null;
 
@@ -281,28 +220,22 @@ class _MapPageState extends State<MapPage> {
         backgroundColor: c.background,
         body: Stack(
           children: [
-            // Carte plein écran Google Maps avec repères personnalisés
+            // Carte plein écran.
             Positioned.fill(
               child: GoogleMap(
                 initialCameraPosition: _initialCamera,
                 style: isDark ? MapStyles.dark : MapStyles.light,
                 markers: _buildMarkers(),
-                myLocationEnabled: false,
-                myLocationButtonEnabled: false,
-                onMapCreated: (controller) {
-                  _mapController = controller;
-                  if (_hasLocationPermission) {
-                    _goToUserCurrentLocation();
-                  }
-                },
+                onMapCreated: (controller) => _mapController = controller,
                 onTap: (_) => setState(() => _selected = null),
                 zoomControlsEnabled: false,
                 mapToolbarEnabled: false,
                 compassEnabled: false,
+                myLocationEnabled: _showMyLocation,
+                myLocationButtonEnabled: false,
               ),
             ),
-
-            // Barre de recherche
+            // Recherche : 16 des bords, 328 × 52.
             Positioned(
               top: searchTop,
               left: 16,
@@ -312,8 +245,7 @@ class _MapPageState extends State<MapPage> {
                 onTap: () => _showMessage('Recherche : bientôt disponible'),
               ),
             ),
-
-            // Puces de filtre
+            // Puces de filtre : 12 px sous la recherche.
             Positioned(
               top: filtersTop,
               left: 16,
@@ -323,8 +255,7 @@ class _MapPageState extends State<MapPage> {
                 onChanged: _onFilterChanged,
               ),
             ),
-
-            // Fiche du signalement sélectionné
+            // Fiche du signalement : 16 des bords, 44 au-dessus de la barre du bas.
             Positioned(
               left: 16,
               right: 16,
@@ -342,45 +273,27 @@ class _MapPageState extends State<MapPage> {
                         ? const SizedBox.shrink()
                         : ReportSheetCard(
                             report: _sheetReport!,
-                            onTap: () => _showMessage(
-                              'Détail de #${_sheetReport!.trackingNumber} : bientôt disponible',
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => ReportDetailPage(report: _sheetReport!),
+                              ),
                             ),
                           ),
                   ),
                 ),
               ),
             ),
-
-            // Bouton de recentrage GPS (placé juste au-dessus du bouton Signaler)
+            // Bouton « Ma position » : 12 px au-dessus du bouton « Signaler »
+            // (25 + 48 + 12 = 85 ; avec la fiche ouverte : 184 + 48 + 12 = 244).
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutCubic,
               right: 16,
-              bottom: sheetVisible ? 242 : 83,
-              child: Material(
-                color: c.surface,
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                elevation: 2,
-                shadowColor: Colors.black26,
-                child: InkWell(
-                  onTap: _goToUserCurrentLocation,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  child: SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Center(
-                      child: Icon(
-                        Symbols.my_location_rounded,
-                        size: 22,
-                        color: c.primary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              bottom: sheetVisible ? 244 : 85,
+              child: LocateButton(isLoading: _isLocating, onPressed: _goToMyLocation),
             ),
-
-            // Bouton « Signaler »
+            // Bouton « Signaler » : 16 du bord droit, 25 au-dessus de la barre ;
+            // 20 au-dessus de la fiche quand elle est ouverte (44 + 120 + 20).
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutCubic,

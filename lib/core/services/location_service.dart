@@ -29,46 +29,15 @@ class LocationException implements Exception {
   String toString() => message;
 }
 
-/// Récupère la position GPS et l'adresse correspondante.
+/// Récupère la position GPS et, si besoin, l'adresse correspondante.
 class LocationService {
   const LocationService();
 
+  /// Position + adresse lisible (formulaire « Nouveau signalement »).
   Future<PlaceInfo> currentPlace() async {
-    // 1. Le GPS du téléphone est-il activé ?
-    if (!await Geolocator.isLocationServiceEnabled()) {
-      throw const LocationException('Activez la localisation de votre téléphone.');
-    }
+    final position = await _currentPosition();
 
-    // 2. L'application a-t-elle la permission ?
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied) {
-      throw const LocationException(
-        'Autorisez l’accès à la position pour signaler un problème.',
-      );
-    }
-    if (permission == LocationPermission.deniedForever) {
-      throw const LocationException(
-        'Position refusée : autorisez-la dans les réglages du téléphone.',
-      );
-    }
-
-    // 3. Position précise (15 secondes maximum).
-    final Position position;
-    try {
-      position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 15),
-        ),
-      );
-    } on TimeoutException {
-      throw const LocationException('Position introuvable : réessayez.');
-    }
-
-    // 4. Adresse lisible (si le service d'adresses échoue, on garde le GPS).
+    // Adresse lisible (si le service d'adresses échoue, on garde le GPS).
     var address = 'Position GPS';
     try {
       final marks = await placemarkFromCoordinates(
@@ -90,5 +59,48 @@ class LocationService {
       longitude: position.longitude,
       address: address,
     );
+  }
+
+  /// Seulement les coordonnées (bouton « Ma position » de la carte) : plus rapide,
+  /// car on ne cherche pas l'adresse.
+  Future<({double latitude, double longitude})> currentCoordinates() async {
+    final position = await _currentPosition();
+    return (latitude: position.latitude, longitude: position.longitude);
+  }
+
+  /// Vérifie le GPS et la permission, puis lit la position (15 secondes maximum).
+  Future<Position> _currentPosition() async {
+    // 1. Le GPS du téléphone est-il activé ?
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      throw const LocationException('Activez la localisation de votre téléphone.');
+    }
+
+    // 2. L'application a-t-elle la permission ?
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied) {
+      throw const LocationException(
+        'Autorisez l’accès à la position pour vous localiser.',
+      );
+    }
+    if (permission == LocationPermission.deniedForever) {
+      throw const LocationException(
+        'Position refusée : autorisez-la dans les réglages du téléphone.',
+      );
+    }
+
+    // 3. Position précise.
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+    } on TimeoutException {
+      throw const LocationException('Position introuvable : réessayez.');
+    }
   }
 }

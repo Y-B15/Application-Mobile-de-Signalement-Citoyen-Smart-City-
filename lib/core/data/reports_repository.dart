@@ -1,5 +1,7 @@
+import '../models/comment.dart';
 import '../models/new_report.dart';
 import '../models/report.dart';
+import '../models/report_detail.dart';
 
 /// Contrat d'accès aux signalements de l'utilisateur connecté.
 ///
@@ -15,6 +17,21 @@ abstract class ReportsRepository {
 
   /// Envoie un nouveau signalement et retourne son numéro de suivi (« CA-2050 »).
   Future<String> submitReport(NewReport report);
+
+  /// Détail d'un signalement : description et dates de l'historique.
+  Future<ReportDetail> fetchReportDetail(Report report);
+
+  /// Soutiens et commentaires d'un signalement.
+  Future<CommentThread> fetchComments(Report report);
+
+  /// Publie un commentaire de l'utilisateur connecté.
+  Future<Comment> addComment(Report report, String text);
+
+  /// Ajoute ou retire le soutien de l'utilisateur à un signalement.
+  Future<void> setSupport(Report report, {required bool supported});
+
+  /// Aime ou n'aime plus un commentaire.
+  Future<void> setCommentLike(String commentId, {required bool liked});
 }
 
 /// Données de démonstration : 12 signalements = 1 signalé + 3 en cours + 8 résolus
@@ -111,5 +128,143 @@ class MockReportsRepository implements ReportsRepository {
   Future<String> submitReport(NewReport report) async {
     await Future<void>.delayed(const Duration(milliseconds: 900));
     return 'CA-2050';
+  }
+
+  /// Démonstration : fabrique un historique cohérent avec le statut.
+  @override
+  Future<ReportDetail> fetchReportDetail(Report report) async {
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+
+    final created = report.createdAt;
+    final description = switch (report.category) {
+      ReportCategory.pothole =>
+        'Nid-de-poule profond au milieu de la chaussée, dangereux pour les deux-roues, surtout la nuit.',
+      ReportCategory.streetLight =>
+        'Le lampadaire ne s’allume plus depuis plusieurs jours : la rue reste dans le noir le soir.',
+      ReportCategory.illegalDump =>
+        'Tas de déchets et de gravats déposés sur le trottoir, qui gênent le passage des piétons.',
+    };
+
+    final taken = report.status == ReportStatus.reported
+        ? null
+        : created.add(const Duration(hours: 2, minutes: 16));
+    final intervention = report.status == ReportStatus.reported
+        ? null
+        : created.add(const Duration(days: 1));
+
+    return ReportDetail(
+      report: report,
+      fullAddress: '${report.address}, Casablanca',
+      description: description,
+      takenAt: taken,
+      interventionAt: intervention,
+      interventionNote: 'équipe sur place',
+      resolvedAt: report.status == ReportStatus.resolved
+          ? created.add(const Duration(days: 3))
+          : null,
+    );
+  }
+
+  /// Démonstration : sept commentaires dont une réponse officielle.
+  @override
+  Future<CommentThread> fetchComments(Report report) async {
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+
+    final now = DateTime.now();
+    return CommentThread(
+      supportCount: 24,
+      supportedByMe: false,
+      comments: [
+        Comment(
+          id: 'c1',
+          authorName: 'Salma R.',
+          initials: 'SR',
+          tone: CommentTone.primary,
+          createdAt: now.subtract(const Duration(hours: 2)),
+          text: 'J’y passe tous les jours, c’est vraiment dangereux pour les scooters. Merci d’avoir signalé !',
+          likes: 8,
+          likedByMe: true,
+        ),
+        Comment(
+          id: 'c2',
+          authorName: 'Service Voirie',
+          initials: 'SV',
+          tone: CommentTone.inProgress,
+          createdAt: now.subtract(const Duration(hours: 1)),
+          text: 'Bonjour, une équipe est programmée demain matin. Nous vous tiendrons informés.',
+          likes: 12,
+          isReply: true,
+          isOfficial: true,
+          role: 'Agent municipal',
+        ),
+        Comment(
+          id: 'c3',
+          authorName: 'Youssef M.',
+          initials: 'YM',
+          tone: CommentTone.reported,
+          createdAt: now.subtract(const Duration(hours: 5)),
+          text: 'Même problème au croisement de la rue Allal Ben Abdellah, déjà signalé sous #CA-2031.',
+          likes: 3,
+        ),
+        Comment(
+          id: 'c4',
+          authorName: 'Nadia K.',
+          initials: 'NK',
+          tone: CommentTone.resolved,
+          createdAt: now.subtract(const Duration(hours: 30)),
+          text: 'Soutenu ✓ Les travaux sont urgents avant les pluies.',
+          likes: 5,
+        ),
+        Comment(
+          id: 'c5',
+          authorName: 'Karim T.',
+          initials: 'KT',
+          tone: CommentTone.primary,
+          createdAt: now.subtract(const Duration(days: 2)),
+          text: 'Un scooter est déjà tombé ici la semaine dernière.',
+          likes: 2,
+        ),
+        Comment(
+          id: 'c6',
+          authorName: 'Imane B.',
+          initials: 'IB',
+          tone: CommentTone.inProgress,
+          createdAt: now.subtract(const Duration(days: 3)),
+          text: 'Merci de suivre ce dossier, le trou s’agrandit à chaque pluie.',
+          likes: 1,
+        ),
+        Comment(
+          id: 'c7',
+          authorName: 'Omar L.',
+          initials: 'OL',
+          tone: CommentTone.reported,
+          createdAt: now.subtract(const Duration(days: 4)),
+          text: 'Je confirme, la photo correspond bien à l’endroit.',
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<Comment> addComment(Report report, String text) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    return Comment(
+      id: 'c${DateTime.now().millisecondsSinceEpoch}',
+      authorName: 'Yassine B.',
+      initials: 'YB',
+      tone: CommentTone.primary,
+      createdAt: DateTime.now(),
+      text: text,
+    );
+  }
+
+  @override
+  Future<void> setSupport(Report report, {required bool supported}) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+  }
+
+  @override
+  Future<void> setCommentLike(String commentId, {required bool liked}) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
   }
 }
