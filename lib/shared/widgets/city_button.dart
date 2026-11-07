@@ -26,6 +26,8 @@ class CityButton extends StatelessWidget {
     this.compact = false,
     this.style = CityButtonStyle.primary,
     this.isLoading = false,
+    this.radius = AppRadius.sm,
+    this.heading = false,
   });
 
   final String label;
@@ -34,10 +36,17 @@ class CityButton extends StatelessWidget {
   final CityButtonStyle style;
   final bool isLoading;
 
+  /// Rayon des coins : 8 par défaut, 12 sur « Enregistrer » (Figma).
+  final double radius;
+
+  /// true : texte « Card title » (16 / 24) avec padding vertical 14, comme le
+  /// bouton « Enregistrer » de « Modifier le profil ». Hauteur : 52 px.
+  final bool heading;
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final shape = BorderRadius.circular(AppRadius.sm);
+    final shape = BorderRadius.circular(radius);
     final primary = style == CityButtonStyle.primary;
     final background = primary ? c.primary : c.surface;
     final foreground = primary ? c.onPrimary : c.text;
@@ -49,7 +58,10 @@ class CityButton extends StatelessWidget {
             height: 20,
             child: CircularProgressIndicator(strokeWidth: 2, color: foreground),
           )
-        : Text(label, style: AppText.bodyStrong(foreground));
+        : Text(
+            label,
+            style: heading ? AppText.cardTitle(foreground) : AppText.bodyStrong(foreground),
+          );
 
     final button = DecoratedBox(
       decoration: BoxDecoration(
@@ -65,7 +77,9 @@ class CityButton extends StatelessWidget {
           child: Padding(
             padding: compact
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
-                : const EdgeInsets.all(16),
+                : (heading
+                    ? const EdgeInsets.symmetric(horizontal: 16, vertical: 14)
+                    : const EdgeInsets.all(16)),
             child: Center(
               widthFactor: compact ? 1 : null,
               heightFactor: 1,

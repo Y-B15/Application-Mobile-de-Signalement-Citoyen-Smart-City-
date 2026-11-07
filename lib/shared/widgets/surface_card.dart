@@ -18,6 +18,7 @@ class SurfaceCard extends StatelessWidget {
     this.padding = EdgeInsets.zero,
     this.radius = AppRadius.md,
     this.shadow = true,
+    this.outlined = false,
     this.onTap,
   });
 
@@ -27,6 +28,10 @@ class SurfaceCard extends StatelessWidget {
 
   /// false pour les éléments « à plat » (onglets non sélectionnés).
   final bool shadow;
+
+  /// true : contour fin de 1 px (couleur « ligne ») et pas d'ombre. Utilisé par
+  /// les écrans « Paramètres » et « Modifier le profil » de Figma.
+  final bool outlined;
 
   /// Si fourni, la carte réagit au toucher.
   final VoidCallback? onTap;
@@ -39,12 +44,15 @@ class SurfaceCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: shape,
-        boxShadow: shadow ? AppShadows.elevation1 : null,
+        boxShadow: (shadow && !outlined) ? AppShadows.elevation1 : null,
       ),
       child: Material(
         color: context.colors.surface,
-        borderRadius: shape,
         clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: shape,
+          side: outlined ? BorderSide(color: context.colors.line) : BorderSide.none,
+        ),
         child: onTap == null ? content : InkWell(onTap: onTap, child: content),
       ),
     );

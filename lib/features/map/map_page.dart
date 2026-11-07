@@ -6,6 +6,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../core/data/reports_repository.dart';
 import '../../core/models/report.dart';
 import '../../core/services/location_service.dart';
+import '../../core/state/profile_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/city_extended_fab.dart';
 import '../../shared/widgets/city_toast.dart';
@@ -45,9 +46,6 @@ class _MapPageState extends State<MapPage> {
     target: LatLng(33.5883, -7.6322),
     zoom: 16,
   );
-
-  // Utilisateur de démonstration (viendra de Firebase Auth plus tard).
-  static const String _userInitials = 'YB';
 
   List<Report> _reports = const [];
   ReportStatus? _statusFilter; // null = « Tous »
@@ -248,12 +246,15 @@ class _MapPageState extends State<MapPage> {
               top: searchTop,
               left: 16,
               right: 16,
-              child: MapSearchBar(
-                initials: _userInitials,
-                onTap: () => CityToast.show(
+              child: ValueListenableBuilder<UserProfile>(
+                valueListenable: profileNotifier,
+                builder: (context, profile, _) => MapSearchBar(
+                  initials: profile.initials,
+                  onTap: () => CityToast.show(
                   context,
                   'Recherche bientôt disponible',
                   icon: Symbols.search_rounded,
+                ),
                 ),
               ),
             ),

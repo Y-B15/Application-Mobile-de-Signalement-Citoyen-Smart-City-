@@ -10,7 +10,9 @@ import '../../shared/widgets/city_toast.dart';
 import '../../shared/widgets/city_fab.dart';
 import '../../shared/widgets/report_card.dart';
 import '../../shared/widgets/state_cards.dart';
+import '../../core/state/profile_store.dart';
 import '../new_report/new_report_page.dart';
+import '../settings/settings_page.dart';
 import '../report_detail/report_detail_page.dart';
 import 'report_filter.dart';
 import 'widgets/account_row.dart';
@@ -36,7 +38,6 @@ class MyAreaPage extends StatefulWidget {
 
 class _MyAreaPageState extends State<MyAreaPage> {
   // Utilisateur de démonstration (viendra de Firebase Auth plus tard).
-  static const String _userName = 'Yassine B.';
   static const String _userSubtitle = 'Citoyen · Casablanca';
 
   List<Report> _reports = const [];
@@ -92,6 +93,12 @@ class _MyAreaPageState extends State<MyAreaPage> {
     );
   }
 
+  void _openSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
+    );
+  }
+
   Future<void> _confirmLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -143,7 +150,12 @@ class _MyAreaPageState extends State<MyAreaPage> {
                   // dernière carte puisse défiler au-dessus de lui.
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 91),
                   children: [
-                    const ProfileHeader(name: _userName, subtitle: _userSubtitle),
+                    // Le nom suit « Modifier le profil ».
+                    ValueListenableBuilder<UserProfile>(
+                      valueListenable: profileNotifier,
+                      builder: (context, profile, _) =>
+                          ProfileHeader(name: profile.name, subtitle: _userSubtitle),
+                    ),
                     const SizedBox(height: 12),
                     StatsCard(
                       total: _reports.length,
@@ -159,7 +171,7 @@ class _MyAreaPageState extends State<MyAreaPage> {
                           icon: Symbols.settings_rounded,
                           title: 'Paramètres',
                           subtitle: 'Notifications, profil et préférences',
-                          onTap: () => _showSoon('Paramètres'),
+                          onTap: _openSettings,
                         ),
                         AccountRow(
                           icon: Symbols.logout_rounded,

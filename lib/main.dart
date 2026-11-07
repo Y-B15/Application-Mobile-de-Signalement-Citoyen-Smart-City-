@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'features/home/home_shell.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'features/auth/screens/forgot_password_page.dart';
 import 'features/auth/screens/login_page.dart';
 import 'features/auth/screens/register_page.dart';
@@ -22,27 +23,30 @@ class CityAlertApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CityAlert',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => OnboardingPage(
-          onFinished: () => Navigator.pushReplacementNamed(context, '/login'),
-        ),
-        '/login': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
-        '/forgot-password': (context) => const ForgotPasswordPage(),
-        '/auth/reset-sent': (context) => const ResetSentPage(),
-        '/home': (context) => const HomeShell(),
-        '/map': (context) => const MapPage(),
-        '/my-area': (context) => const MyAreaPage(),
-        '/report': (context) => const ReportPage(),
-        '/report-detail': (context) => const ReportDetailPage(),
-      },
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeModeNotifier,
+      builder: (context, mode, _) => MaterialApp(
+        title: 'CityAlert',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        themeMode: mode,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => OnboardingPage(
+            onFinished: () => Navigator.pushReplacementNamed(context, '/login'),
+          ),
+          '/login': (context) => const LoginPage(),
+          '/register': (context) => const RegisterPage(),
+          '/forgot-password': (context) => const ForgotPasswordPage(),
+          '/auth/reset-sent': (context) => const ResetSentPage(),
+          '/home': (context) => const HomeShell(),
+          '/map': (context) => const MapPage(),
+          '/my-area': (context) => const MyAreaPage(),
+          '/report': (context) => const ReportPage(),
+          '/report-detail': (context) => const ReportDetailPage(),
+        },
+      ),
     );
   }
 }
