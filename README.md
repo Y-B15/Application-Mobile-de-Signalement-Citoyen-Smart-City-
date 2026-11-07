@@ -1,174 +1,197 @@
-<div align="center">
+# CityAlert (Smart City) – application Flutter
 
-  # 🏙️ CityAlert · Smart City
-  ### Application Mobile Citoyenne de Signalement d'Anomalies Urbaines
+Application mobile de signalement citoyen. Le design vient du fichier Figma
+**Smart City - Signalement Citoyen (Prototype)** (clé `lkcTNAc6sFyACebysE6u4M`).
 
-  [![Flutter](https://img.shields.io/badge/Flutter-3.24+-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
-  [![Dart](https://img.shields.io/badge/Dart-3.4+-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
-  [![Android](https://img.shields.io/badge/Android-API%2036-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
-  [![Material 3](https://img.shields.io/badge/Design-Material%203-757575?style=for-the-badge&logo=materialdesign&logoColor=white)](https://m3.material.io)
-  [![Theme](https://img.shields.io/badge/Theme-Clair%20%26%20Sombre-0F766E?style=for-the-badge)](https://figma.com)
+**Écrans codés : « Onboarding » (3 diapositives), « Carte », « Mon espace », « Nouveau signalement », « Prise de photo », « Confirmation », « Détail du signalement » « Commentaires », « Paramètres » et « Modifier le profil »** (clair + sombre, suit le thème du téléphone). L'application démarre sur l'accueil ; « Passer » / « Commencer » ouvre « Mon espace » en attendant l'écran de connexion.
 
-  *Projet de Fin de Semestre · Application Mobile Smart City*
+## Installation (une seule fois)
 
-</div>
+Flutter 3.24 ou plus récent recommandé.
 
----
-
-## 📖 À Propos du Projet
-
-**CityAlert** est une application mobile moderne conçue pour transformer la gestion des services urbains en permettant aux citoyens de signaler rapidement et avec précision les dysfonctionnements de leur ville (nids-de-poule, lampadaires en panne, dépôts sauvages).
-
-L'application est fidèle **pixel-par-pixel** à la maquette officielle **Figma** *(Smart City - Signalement Citoyen (Prototype), clé `lkcTNAc6sFyACebysE6u4M`)* avec une expérience utilisateur optimale, un mode Sombre dynamique et une intégration **Google Maps GPS en temps réel**.
-
-> **Application ID** : `com.maville.cityalert.ma`
-
----
-
-## ✨ Fonctionnalités Principales
-
-- 🗺️ **Carte Interactive Google Maps & GPS** :
-  - Localisation en temps réel du citoyen avec point de précision stylisé aux couleurs de l'application.
-  - Repères colorés selon le statut du signalement (*Signalé*, *En cours*, *Résolu*).
-  - Bouton de recentrage GPS sur-mesure positionné au-dessus du bouton d'action.
-  - Filtres interactifs par statut (*Tous*, *Signalés*, *En cours*, *Résolus*).
-  - Fiche de signalement sélectionné (`ReportSheetCard`) avec bouton d'action rapide.
-
-- 📸 **Nouveau Signalement & Caméra** :
-  - Capture photo instantanée avec l'appareil photo du smartphone ou sélection depuis la galerie.
-  - Géolocalisation GPS automatique de l'anomalie avec conversion en adresse civique (*Geocoding*).
-  - Sélection interactive des catégories d'anomalies (*Nid-de-poule*, *Lampadaire*, *Dépôt sauvage*).
-
-- 👤 **Mon Espace Citoyen & Profil** :
-  - Dashboard de statistiques dynamiques (*Total*, *Signalés*, *En cours*, *Résolus*).
-  - Historique complet des signalements avec onglets de filtrage rapide.
-  - Gestion du compte et paramètres utilisateur.
-
-- 🎨 **Design System & Thématisation Adaptative** :
-  - Palette officielle Figma avec support natif des thèmes **Clair** (`#F8FAFC`) et **Sombre** (`#15181D`).
-  - Typography **Inter** (Display, Title, Card Title, Body, Caption).
-  - Cartes épurées sans bordures avec ombrage doux *Elevation 1*.
-  - Icônes vectorielles *Material Symbols Rounded*.
-
----
-
-## 🛠️ Stack Technique & Dépendances
-
-| Technologie / Library | Rôle & Usage |
-| :--- | :--- |
-| **Flutter 3.24+ / Dart 3.4+** | Framework multiplateforme réactif |
-| **Google Maps Flutter** (`google_maps_flutter`) | Cartographie interactive vectorielle |
-| **Geolocator** (`geolocator`) | Capture de position GPS haute précision en temps réel |
-| **Geocoding** (`geocoding`) | Reverse-geocoding (coordonnées GPS → adresse civile) |
-| **Image Picker** (`image_picker`) | Prise de photo caméra et sélection galerie |
-| **Google Fonts Inter** (`google_fonts`) | Typographie officielle du Design System Figma |
-| **Material Symbols** (`material_symbols_icons`) | Set d'icônes arrondies officielles |
-
----
-
-## 📂 Architecture du Projet
-
-```text
-lib/
-├── main.dart                          # Point d'entrée, routes et bascule de thème
-├── core/
-│   ├── data/
-│   │   └── reports_repository.dart    # Contrat Repository & MockData (12 signalements)
-│   ├── models/
-│   │   ├── report.dart                # Modèle Report, ReportStatus, ReportCategory
-│   │   └── new_report.dart            # Modèle DTO pour la création d'anomalies
-│   ├── services/
-│   │   └── location_service.dart      # Service GPS & Reverse-Geocoding
-│   ├── theme/
-│   │   ├── app_colors.dart            # Palette Figma (Clair #0F766E / Sombre #5EEAD4)
-│   │   ├── app_decor.dart             # Rayons (sm 8, md 12, lg 16) & Ombre Elevation 1
-│   │   ├── app_text.dart              # 7 styles typographiques Inter
-│   │   └── app_theme.dart             # ThemeData Material 3 (Light & Dark)
-│   └── utils/
-│       └── date_format.dart           # Formateur temporel (« il y a 2 h », « 14 oct. »)
-├── features/
-│   ├── auth/                          # Écrans d'authentification (Connexion, Inscription, Reset)
-│   ├── camera/                        # Prise de photo caméra native
-│   ├── map/                           # Écran Carte Google Maps, Filtres & Fiche
-│   ├── my_area/                       # Écran Mon espace, Profil & Statistiques
-│   ├── new_report/                    # Écran de création d'un nouveau signalement
-│   └── onboarding/                    # Slides de présentation au 1er lancement
-└── shared/
-    └── widgets/                       # Composants réutilisables (Card, Badge, Button, FAB)
+```bash
+flutter create --project-name cityalert --org ma.estsb --platforms android cityalert
+cd cityalert
 ```
 
----
+Copiez dans ce dossier, en remplaçant l'existant : `lib/`, `test/`, `pubspec.yaml`,
+`analysis_options.yaml`. Supprimez `test/widget_test.dart` (test d'exemple de Flutter).
 
-## 🎨 Correspondance Figma → Flutter
-
-| Composant Figma | Implémentation Flutter | Caractéristiques |
-| :--- | :--- | :--- |
-| **Styles de Couleur** | `CityAlertColors.light / .dark` | Primaire `#0F766E`, Fond `#F8FAFC` / `#15181D` |
-| **Typographie Inter** | `AppText.display` ... `captionStrong` | Police Inter chargée dynamiquement |
-| **Ombre Elevation 1** | `AppShadows.elevation1` | Y: 1, Blur: 3, Opacité: 8% noir |
-| **Cartes Surface** | `SurfaceCard` | Rayon 12px, sans bordure |
-| **Badges de Statut** | `StatusBadge` | Pastel 10% avec texte de couleur forte |
-| **Cartes Signalement** | `ReportCard` | Vignette 40x40 avec icône de catégorie |
-| **Boutons Flottants** | `CityExtendedFab` / `CityFab` | Bouton principal 56px / étendu |
-| **Navigation du Bas** | `CityBottomNav` | Barre de navigation 72px avec pastille active |
-
----
-
-## ⚡ Prise en Main & Installation
-
-### Préréquis
-- **Flutter SDK** : `>= 3.24.0`
-- **Android Studio / VS Code**
-- **Android SDK** : `compileSdk 36` (Android 16)
-
-### Installation
 ```bash
-# 1. Cloner le dépôt Git
-git clone https://github.com/Y-B15/Application-Mobile-de-Signalement-Citoyen-Smart-City-.git
-cd cityalert
-
-# 2. Récupérer les dépendances Flutter
 flutter pub get
-
-# 3. Lancer l'analyseur de code
 flutter analyze
-
-# 4. Exécuter l'application sur émulateur ou appareil physique
+flutter test
 flutter run
 ```
 
----
+Ajoutez la permission Internet dans `android/app/src/main/AndroidManifest.xml`,
+juste avant `<application ...>` (la police Inter est téléchargée au 1er lancement,
+et Firebase en aura besoin) :
 
-## 🔐 Configuration de la Clé API Google Maps (Sécurisée)
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
 
-Pour des raisons de sécurité, la clé Google Maps API **n'est pas commitée dans le code source Git**.
+## Google Maps (obligatoire pour l'écran Carte)
 
-Pour exécuter la carte Google Maps en local :
-1. Ouvrez ou créez le fichier `android/local.properties` *(fichier ignoré par Git)*.
-2. Ajoutez votre clé API Google Cloud Console :
-   ```properties
-   MAPS_API_KEY=votre_cle_google_maps_api_ici
-   ```
-3. Gradle lira automatiquement la clé lors de la compilation via `manifestPlaceholders`.
+1. Console Google Cloud : créez un projet, activez **Maps SDK for Android** et
+   créez une **clé API** (la facturation doit être activée ; l'usage de test reste dans le quota gratuit).
+2. Dans `android/app/src/main/AndroidManifest.xml`, **à l'intérieur** de `<application ...>` :
 
----
+```xml
+<meta-data android:name="com.google.android.geo.API_KEY" android:value="VOTRE_CLE_API"/>
+```
 
-## 🚦 Feuille de Route (Roadmap)
+3. Si Gradle se plaint de la version minimale, mettez `minSdk = 21` (ou 23) dans
+   `android/app/build.gradle(.kts)`.
+4. Ne publiez jamais la clé sur GitHub ; restreignez-la à votre application
+   (nom de package + empreinte SHA-1) dans la console Google Cloud.
 
-- [x] **Étape 1** : Thématique complète & Design System Figma (Clair + Sombre).
-- [x] **Étape 2** : Écran *Mon Espace* (Profil, Statistiques, Filtres, Rafraîchissement).
-- [x] **Étape 3** : Écran *Carte* Google Maps avec GPS temps réel, marqueurs stylisés & fiche interactive.
-- [x] **Étape 4** : Capture photo caméra / galerie & Reverse-Geocoding d'adresse.
-- [x] **Étape 5** : Écran *Nouveau Signalement* avec sélection de catégorie.
-- [ ] **Étape 6** : Intégration Firebase (Auth, Firestore `reports`, Storage `photos`).
-- [ ] **Étape 7** : Suivi détaillé du signalement & Commentaires citoyens.
-- [ ] **Étape 8** : Dashboard Ville (Web / Desktop).
+Sans clé, la carte s'affiche grise : c'est normal.
 
----
+## Appareil photo, galerie et GPS (formulaire de signalement)
 
-<div align="center">
+Dans `android/app/src/main/AndroidManifest.xml`, **avant** `<application ...>`, ajoutez :
 
-  **CityAlert · Smart City Signalement Citoyen**  
-  *Développé dans le cadre du projet de Semester*
+```xml
+<uses-permission android:name="android.permission.CAMERA"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+```
 
-</div>
+Dans `android/app/build.gradle(.kts)`, `minSdk` doit valoir au moins 21.
+Testez la caméra sur un vrai téléphone : l'émulateur n'a qu'une caméra simulée.
+
+## Organisation
+
+```
+lib/
+  main.dart                       démarrage, thèmes clair/sombre
+  core/
+    theme/app_colors.dart         palette Figma (clair + sombre), context.colors
+    theme/app_text.dart           7 styles Inter (Display → Caption strong)
+    theme/app_decor.dart          rayons 8/12/16 + ombre « Elevation 1 »
+    theme/app_theme.dart          ThemeData Material 3
+    models/report.dart            Report, ReportStatus, ReportCategory
+    data/reports_repository.dart  contrat + données de démo (12 = 1 + 3 + 8)
+    utils/date_format.dart        « il y a 2 h », « 14 oct. »
+  shared/widgets/                 briques réutilisables (cartes, badge, nav, FAB, bouton, états)
+  features/onboarding/            accueil : 3 diapositives, points, illustrations
+  features/home/home_shell.dart   coque : barre du bas Carte / Mon espace
+  features/map/                   écran « Carte » : Google Maps, repères, filtres, fiche
+  features/new_report/            formulaire « Nouveau signalement » (photo, GPS, catégorie, texte)
+  features/camera/                écran « Prise de photo » (plugin camera)
+  features/my_area/               écran « Mon espace » et ses morceaux
+test/date_format_test.dart
+```
+
+## Correspondance Figma → Flutter (Mon espace)
+
+| Figma | Flutter |
+|---|---|
+| Styles de couleur `CityAlert/Light/*`, `Dark/*`, `Primary` | `CityAlertColors.light / .dark` |
+| Styles de texte `CityAlert/Display … Caption strong` | `AppText.display … captionStrong` |
+| Effet `CityAlert/Elevation 1` (Y1, flou 3, noir 8 %) | `AppShadows.elevation1` |
+| Cartes blanches rayon 12 + ombre | `SurfaceCard` |
+| Composant Badge | `StatusBadge` |
+| Composant ReportCard (Liste) | `ReportCard` |
+| États Vide / Chargement | `EmptyStateCard` / `SkeletonCard` |
+| Bottom Nav (72 px) | `CityBottomNav` (style de l'écran Carte, voir ci-dessous) |
+| Pin/… (40 × 44), Search, Filters | `MarkerIconFactory`, `MapSearchBar`, `MapFilterChips` |
+| ReportCard « Fiche » | `ReportSheetCard` |
+| Button « Action étendue » | `CityExtendedFab` |
+| Button Secondaire / Photo | `CityButton(style: secondary)` / `CityButton(compact: true)` |
+| App Bar (56 px) | `CityAppBar` |
+| Photo / Location / Category / Description | `PhotoSection`, `LocationSection`, `CategorySection`, `DescriptionField` |
+| Button / Action (56 px) | `CityFab` |
+| Button / Principal | `CityButton` |
+
+## Points de fidélité à connaître (relevés dans Figma)
+
+- Les cartes n'ont **pas de bordure** : seulement l'ombre « Elevation 1 ».
+- **Barre du bas** : Figma la dessine de deux façons. Sur « Carte », l'onglet actif a une
+  pastille #E6F7F5, une icône et un libellé primaires. Sur « Mon espace », la pastille est
+  primaire pleine et l'icône disparaît dedans. Le code utilise le style de la Carte pour
+  les deux écrans ; la version de « Mon espace » ressemble à une erreur dans la maquette.
+- Les vignettes de la liste gardent leurs pastels clairs en mode sombre (comme Figma).
+- La vignette « lampadaire résolu » est bleu clair (#EFF6FF) dans Figma, alors que
+  les autres résolus sont verts : reproduit tel quel, à vérifier côté design.
+- Les libellés « Chargement » et « État vide » des composants Figma sont traités
+  comme des étiquettes de documentation : ils ne sont pas affichés dans l'app.
+
+## Prochaine étape
+
+Brancher Firebase : créer `FirestoreReportsRepository` (même contrat que
+`MockReportsRepository`) et le passer à `MyAreaPage`.
+
+## Écran Carte : points à valider
+
+- Le fond de carte vient de Google Maps (styles clair et sombre dans `map_styles.dart`) :
+  les couleurs s'approchent de la maquette, mais le tracé des rues et les noms sont ceux de Google.
+- Les repères sont dessinés avec le tracé exact de la goutte Figma (36 × 40, contour 3 px).
+- États non dessinés dans Figma et déduits : puce de statut sélectionnée (fond #E6F7F5, sans ombre)
+  et puce « Tous » non sélectionnée (fond surface avec ombre).
+- La puce « Tous » du mode sombre garde le fond clair #E6F7F5 comme dans Figma.
+- Le repère touché n'a pas d'aspect particulier dans Figma : seule la fiche apparaît.
+
+## Formulaire « Nouveau signalement » et « Prise de photo » : points à valider
+
+- **Titre invisible en sombre dans Figma** : le titre « Nouveau signalement » du mode sombre a la
+  couleur du mode clair (#181B22) sur fond sombre. Le code utilise la couleur de texte du thème.
+- États non dessinés dans Figma et déduits : photo choisie (miniature à la place de la pastille,
+  boutons « Reprendre » / « Galerie »), position en recherche ou en erreur (avec « Réessayer »),
+  bouton d'envoi en chargement, caméra refusée ou indisponible.
+- Le viseur de Figma montre une scène dessinée ; dans l'app il affiche la vraie caméra,
+  avec la grille, les quatre coins et le conseil « Cadrez le problème » par-dessus.
+- Le zoom bascule entre 1× et 2×. L'éclair est « activé / désactivé ».
+- « Modifier » (position) affiche « bientôt disponible » : il ouvrira un choix sur la carte plus tard.
+- À l'envoi, le numéro de suivi est fictif (`CA-2050`) et un message s'affiche ; l'écran
+  « Confirmation » le remplacera à l'étape suivante.
+
+## Confirmation et Détail du signalement : points à valider
+
+- Historique : Figma dessine l'état « Signalé » et l'état « En cours ». L'état « Résolu » (toutes les étapes faites) est déduit.
+- Les coches des points sont blanches (lues en mode clair ; à vérifier en sombre dans Figma).
+- La puce du service (« Voirie ») vient de la catégorie : nid-de-poule = Voirie, lampadaire = Éclairage public, dépôt sauvage = Propreté.
+- La photo du détail est un espace gris pour l'instant (pas de photo de démonstration).
+- « Voir sur la carte » et « Retour à l'accueil » ramènent tous les deux à l'onglet Carte.
+
+## Commentaires et toasts : points à valider
+
+- **Accès aux commentaires** : Figma ne montre pas comment on y arrive. J'ai ajouté une ligne
+  « Commentaires et soutiens » en bas du détail du signalement (hors maquette).
+- **Toasts** : `CityToast` reproduit les messages de Figma (fond « texte », rayon 12, centré à 96 px du bas).
+  Déjà utilisé pour « Commentaire envoyé ✓ », « Lien copié ✓ », « Numéro copié ✓ » et « Options bientôt disponibles ».
+- États non dessinés et déduits : bouton « Soutenu (+25) » après le toucher ; « Répondre » place « @Prénom » dans le champ ;
+  « Plus récents » affiche « Options bientôt disponibles » ; bouton d'envoi estompé quand le champ est vide.
+- Dans Figma la ligne d'une réponse officielle déborde à droite (nom + pastille + date) : ici la date passe à la ligne.
+- Le titre « Commentaires (7) » compte les commentaires chargés ; la démo en contient 7.
+
+## Bouton « Ma position » (écran Carte)
+
+- Ajout hors maquette : carré de 48 px au-dessus de « Signaler », même style que le bouton « Partager ».
+- Il lit le GPS, affiche le point bleu et centre la carte sur vous (zoom 17).
+- Si le GPS est coupé ou la permission refusée, un message s'affiche (toast).
+- Il utilise les permissions de localisation déjà ajoutées pour le formulaire de signalement.
+
+## Messages temporaires (toasts)
+
+Tous les anciens messages (SnackBar) sont remplacés par `CityToast` (style Figma) : Carte, Mon espace,
+Nouveau signalement et Prise de photo (« Photo ajoutée ✓ », « Flash activé », « Caméra retournée »).
+
+## Envoyer le code sans dépasser la taille maximale
+
+Les dossiers `build`, `.dart_tool` et `android\.gradle` pèsent des centaines de Mo : ne les zippez pas.
+Envoyez seulement `lib`, `test`, `pubspec.yaml` et `android\app\src\main\AndroidManifest.xml`,
+ou lancez `flutter clean` avant de zipper le dossier.
+
+## Paramètres et Modifier le profil : points à valider
+
+- Ces deux écrans de Figma utilisent un **contour fin de 1 px** (et pas d'ombre) sur leurs cartes, contrairement aux autres écrans :
+  reproduit avec `SurfaceCard(outlined: true)`. Le bouton « Enregistrer » a un rayon de 12 et un texte 16/24 (`CityButton(radius: 12, heading: true)`).
+- Le **choix du thème** (Clair / Sombre / Auto) change l'application tout de suite grâce à `themeModeNotifier` : `main.dart` doit l'écouter.
+- Les réglages (notifications, rayon de proximité, thème) sont gardés **en mémoire** : ils ne sont pas encore enregistrés.
+- États non dessinés et déduits : contour primaire d'un champ actif ; messages d'erreur du profil (toasts « Saisissez votre nom », « Adresse e-mail invalide ») ;
+  toast « Profil enregistré ✓ ».
+- Le contour blanc du bouton du curseur est blanc en clair comme en sombre (Figma : #FFFFFF).
+- « Changer le mot de passe » et « Se déconnecter » affichent « bientôt disponible » (Firebase Auth plus tard).
