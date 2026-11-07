@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/data/reports_repository.dart';
@@ -7,6 +8,7 @@ import '../../core/models/new_report.dart';
 import '../../core/models/report.dart';
 import '../../core/services/location_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../shared/widgets/city_toast.dart';
 import '../../shared/widgets/city_app_bar.dart';
 import '../../shared/widgets/city_button.dart';
 import '../camera/camera_page.dart';
@@ -99,7 +101,10 @@ class _NewReportPageState extends State<NewReportPage> {
         builder: (_) => const CameraPage(),
       ),
     );
-    if (path != null && mounted) setState(() => _photoPath = path);
+    if (path != null && mounted) {
+      setState(() => _photoPath = path);
+      CityToast.show(context, 'Photo ajoutée ✓', icon: Symbols.check_circle_rounded);
+    }
   }
 
   Future<void> _pickFromGallery() async {
@@ -109,7 +114,10 @@ class _NewReportPageState extends State<NewReportPage> {
         maxWidth: 2048,
         imageQuality: 85,
       );
-      if (file != null && mounted) setState(() => _photoPath = file.path);
+      if (file != null && mounted) {
+        setState(() => _photoPath = file.path);
+        CityToast.show(context, 'Photo ajoutée ✓', icon: Symbols.check_circle_rounded);
+      }
     } catch (_) {
       _showMessage('Impossible d’ouvrir la galerie.');
     }
@@ -159,11 +167,10 @@ class _NewReportPageState extends State<NewReportPage> {
     return '1 photo · $where';
   }
 
-  void _showMessage(String message) {
+  /// Message temporaire (style « toast » de Figma).
+  void _showMessage(String message, {IconData? icon}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    CityToast.show(context, message, icon: icon);
   }
 
   @override
@@ -208,7 +215,8 @@ class _NewReportPageState extends State<NewReportPage> {
                           isLoading: _isLocating,
                           errorMessage: _locationError,
                           onEdit: () => _showMessage(
-                            'Modifier la position : bientôt disponible',
+                            'Modifier la position bientôt disponible',
+                            icon: Symbols.location_on_rounded,
                           ),
                           onRetry: _locate,
                         ),

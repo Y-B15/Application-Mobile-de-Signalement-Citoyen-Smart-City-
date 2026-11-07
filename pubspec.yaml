@@ -10,14 +10,15 @@ dependencies:
   flutter:
     sdk: flutter
   # Inter : la police du design system (téléchargée au premier lancement).
-  google_fonts: ^6.2.1
+  google_fonts: ^6.2.2
   # Material Symbols Rounded : les mêmes icônes que dans Figma.
-  material_symbols_icons: ^4.2800.0
+  material_symbols_icons: ^4.2960.0
   # Carte, géolocalisation, géocodage et photos.
   google_maps_flutter: ^2.10.0
   geolocator: ^13.0.1
   geocoding: ^3.0.0
   image_picker: ^1.1.2
+  camera: ^0.12.2
 
 dev_dependencies:
   flutter_test:

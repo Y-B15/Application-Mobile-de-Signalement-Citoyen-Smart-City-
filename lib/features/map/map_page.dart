@@ -22,8 +22,9 @@ import 'widgets/report_sheet_card.dart';
 /// Écran « Carte » (Figma : « 2 · Carte » et « 2.2 · Carte après clic »).
 ///
 /// Une carte Google Maps plein écran, sous : la barre de recherche, les puces
-/// de filtre, le bouton « Signaler » et, quand on touche un repère, la fiche du
-/// signalement. La barre du bas est fournie par `HomeShell`.
+/// de filtre, le bouton « Ma position », le bouton « Signaler » et, quand on
+/// touche un repère, la fiche du signalement. La barre du bas est fournie par
+/// `HomeShell`.
 class MapPage extends StatefulWidget {
   const MapPage({
     super.key,
@@ -69,12 +70,6 @@ class _MapPageState extends State<MapPage> {
   bool _showMyLocation = false;
 
   @override
-  void dispose() {
-    _mapController?.dispose();
-    super.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
     _loadReports();
@@ -86,6 +81,12 @@ class _MapPageState extends State<MapPage> {
     _buildIcons(); // à refaire si le thème ou la densité d'écran change
   }
 
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadReports() async {
     try {
       final reports = await widget.repository.fetchMapReports();
@@ -93,7 +94,11 @@ class _MapPageState extends State<MapPage> {
       setState(() => _reports = reports);
     } catch (_) {
       if (!mounted) return;
-      _showMessage('Impossible de charger les signalements.');
+      CityToast.show(
+        context,
+        'Impossible de charger les signalements.',
+        icon: Symbols.wifi_off_rounded,
+      );
     }
   }
 
@@ -167,7 +172,11 @@ class _MapPageState extends State<MapPage> {
       CityToast.show(context, e.message, icon: Symbols.location_off_rounded);
     } catch (_) {
       if (!mounted) return;
-      CityToast.show(context, 'Impossible de vous localiser.', icon: Symbols.location_off_rounded);
+      CityToast.show(
+        context,
+        'Impossible de vous localiser.',
+        icon: Symbols.location_off_rounded,
+      );
     } finally {
       if (mounted) setState(() => _isLocating = false);
     }
@@ -183,20 +192,17 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
-  /// Ouvre le formulaire de signalement ; à son retour, confirme l'envoi.
-  Future<void> _openNewReport() async {
-    final tracking = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const NewReportPage()),
+  /// Ouvre le formulaire de signalement (qui se termine sur l'écran de confirmation).
+  void _openNewReport() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const NewReportPage()),
     );
-    if (tracking != null && mounted) {
-      _showMessage('Signalement #$tracking envoyé (démonstration)');
-    }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  void _openDetail(Report report) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => ReportDetailPage(report: report)),
+    );
   }
 
   @override
@@ -205,9 +211,11 @@ class _MapPageState extends State<MapPage> {
     final isDark = context.isDark;
 
     // Dans Figma, la barre d'état fait 36 px et la recherche commence à y = 40.
+    // Attention : tout doit rester un `double` (36.0 et non 36), sinon le résultat
+    // devient un `num` et Positioned(top: ...) le refuse.
     final topInset = MediaQuery.paddingOf(context).top;
-    final double searchTop = (topInset < 36 ? 36.0 : topInset) + 4;
-    final double filtersTop = searchTop + 52 + 12;
+    final double searchTop = (topInset < 36.0 ? 36.0 : topInset) + 4.0;
+    final double filtersTop = searchTop + 52.0 + 12.0;
 
     final sheetVisible = _selected != null;
 
@@ -242,7 +250,11 @@ class _MapPageState extends State<MapPage> {
               right: 16,
               child: MapSearchBar(
                 initials: _userInitials,
-                onTap: () => _showMessage('Recherche : bientôt disponible'),
+                onTap: () => CityToast.show(
+                  context,
+                  'Recherche bientôt disponible',
+                  icon: Symbols.search_rounded,
+                ),
               ),
             ),
             // Puces de filtre : 12 px sous la recherche.
@@ -273,11 +285,7 @@ class _MapPageState extends State<MapPage> {
                         ? const SizedBox.shrink()
                         : ReportSheetCard(
                             report: _sheetReport!,
-                            onTap: () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => ReportDetailPage(report: _sheetReport!),
-                              ),
-                            ),
+                            onTap: () => _openDetail(_sheetReport!),
                           ),
                   ),
                 ),

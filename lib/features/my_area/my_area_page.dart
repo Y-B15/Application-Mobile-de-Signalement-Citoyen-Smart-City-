@@ -6,6 +6,7 @@ import '../../core/data/reports_repository.dart';
 import '../../core/models/report.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../shared/widgets/city_toast.dart';
 import '../../shared/widgets/city_fab.dart';
 import '../../shared/widgets/report_card.dart';
 import '../../shared/widgets/state_cards.dart';
@@ -79,24 +80,16 @@ class _MyAreaPageState extends State<MyAreaPage> {
   int _count(ReportStatus status) =>
       _reports.where((r) => r.status == status).length;
 
+  /// Message temporaire « … bientôt disponible » (écrans pas encore codés).
   void _showSoon(String label) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$label : bientôt disponible')));
+    CityToast.show(context, '$label bientôt disponible', icon: Symbols.info_rounded);
   }
 
-  /// Ouvre le formulaire de signalement ; à son retour, confirme l'envoi.
-  Future<void> _openNewReport() async {
-    final tracking = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const NewReportPage()),
+  /// Ouvre le formulaire de signalement (qui se termine sur l'écran de confirmation).
+  void _openNewReport() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const NewReportPage()),
     );
-    if (tracking != null && mounted) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          content: Text('Signalement #$tracking envoyé (démonstration)'),
-        ));
-    }
   }
 
   Future<void> _confirmLogout() async {
